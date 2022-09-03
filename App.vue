@@ -1,0 +1,58 @@
+<script>
+	export default {
+		onLaunch: function() {
+			console.log('App Launch')
+		},
+		onShow: function() {
+			console.log('App Show')
+		},
+		onHide: function() {
+			console.log('App Hide')
+		}
+	}
+</script>
+
+<style lang="scss">
+	@import "uview-ui/index.scss";
+
+	/*每个页面公共css */
+	.f-12 {
+		font-size: 24rpx !important;
+	}
+
+	.f-13 {
+		font-size: 26rpx;
+	}
+
+	.f-14 {
+		font-size: 28rpx;
+	}
+
+	.f-15 {
+		font-size: 30rpx;
+	}
+
+	.f-16 {
+		font-size: 32rpx;
+	}
+
+	.f-17 {
+		font-size: 34rpx;
+	}
+
+	.f-18 {
+		font-size: 36rpx;
+	}
+
+	.text-left {
+		text-align: left;
+	}
+
+	.text-right {
+		text-align: right;
+	}
+
+	.text-center {
+		text-align: center;
+	}
+</style>

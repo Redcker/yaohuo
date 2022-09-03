@@ -1,0 +1,130 @@
+const faces = [{
+	'face': '',
+	'name': '表情'
+}, {
+	'face': '踩.gif',
+	'name': '踩'
+}, {
+	'face': '狂踩.gif',
+	'name': '狂踩'
+}, {
+	'face': '淡定.gif',
+	'name': '淡定'
+}, {
+	'face': '囧.gif',
+	'name': '囧'
+}, {
+	'face': '不要.gif',
+	'name': '不要不要'
+}, {
+	'face': '重拳出击.gif',
+	'name': '重拳出击'
+}, {
+	'face': '砳砳.gif',
+	'name': '砳砳君'
+}, {
+	'face': '滑稽砳砳.gif',
+	'name': '滑稽君'
+}, {
+	'face': '沙发.gif',
+	'name': '坐沙发'
+}, {
+	'face': '汗.gif',
+	'name': '汗'
+}, {
+	'face': '亲亲.gif',
+	'name': '么么哒'
+}, {
+	'face': '太开心.gif',
+	'name': '太开心'
+}, {
+	'face': '酷.gif',
+	'name': '酷'
+}, {
+	'face': '思考.gif',
+	'name': '思考'
+}, {
+	'face': '发呆.gif',
+	'name': '发呆'
+}, {
+	'face': '得瑟.gif',
+	'name': '嘚瑟'
+}, {
+	'face': '哈哈.gif',
+	'name': '开心'
+}, {
+	'face': '泪流满面.gif',
+	'name': '泪流满面'
+}, {
+	'face': '放电.gif',
+	'name': '放电'
+}, {
+	'face': '困.gif',
+	'name': '困'
+}, {
+	'face': '超人.gif',
+	'name': '超人'
+}, {
+	'face': '害羞.gif',
+	'name': '害羞'
+}, {
+	'face': '呃.gif',
+	'name': '无语'
+}, {
+	'face': '哇哦.gif',
+	'name': '哇哦'
+}, {
+	'face': '要死了.gif',
+	'name': '要死了'
+}, {
+	'face': '谢谢.gif',
+	'name': '谢谢'
+}, {
+	'face': '抓狂.gif',
+	'name': '抓狂'
+}, {
+	'face': '无奈.gif',
+	'name': '无奈'
+}, {
+	'face': '不好笑.gif',
+	'name': '不好笑'
+}, {
+	'face': '呦呵.gif',
+	'name': '哟呵'
+}, {
+	'face': '感动.gif',
+	'name': '感动'
+}, {
+	'face': '喜欢.gif',
+	'name': '喜欢'
+}, {
+	'face': '疑问.gif',
+	'name': '疑问'
+}, {
+	'face': '委屈.gif',
+	'name': '委屈'
+}, {
+	'face': '你不行.gif',
+	'name': '你不行'
+}, {
+	'face': '流口水.gif',
+	'name': '流口水'
+}, {
+	'face': '潜水.gif',
+	'name': '潜水'
+}, {
+	'face': '咒骂.gif',
+	'name': '咒骂'
+}, {
+	'face': '耶耶.gif',
+	'name': '耶耶'
+}, {
+	'face': '被揍.gif',
+	'name': '被揍'
+}, {
+	'face': '抱走.gif',
+	'name': '抱走'
+}]
+
+
+export default faces
