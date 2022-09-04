@@ -20,7 +20,7 @@
 - 获取项目代码
 
 ```bash
-https://github.com/Redcker/yaohuo.git
+git clone https://github.com/Redcker/yaohuo.git
 ```
 
 - 安装依赖
