@@ -71,14 +71,14 @@
 				}
 			},
 			refreshData() {
-				if (!this.canFresh) {
-					uni.showToast({
-						title: '请勿频繁刷新',
-						icon: 'error'
-					})
-					uni.stopPullDownRefresh()
-					return
-				}
+				// if (!this.canFresh) {
+				// 	uni.showToast({
+				// 		title: '请勿频繁刷新',
+				// 		icon: 'error'
+				// 	})
+				// 	uni.stopPullDownRefresh()
+				// 	return
+				// }
 				this.isSearch = false
 				this.canFresh = false
 				this.page = 1

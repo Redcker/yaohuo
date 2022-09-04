@@ -20,13 +20,14 @@
 							</view>
 						</view>
 						<mp-html :content="comment.text" selectable lazy-load domain="https://yaohuo.me"
-							containerStyle="line-height:40rpx;word-break: break-all;font-size:30rpx"></mp-html>
+							containerStyle="line-height:40rpx;word-break: break-all;font-size:30rpx" :copyLink="false"
+							@linktap="linkTap"></mp-html>
 					</view>
 				</view>
 			</view>
 		</view>
-		<view style="position: fixed;bottom: 0;left: 0;right: 0;background-color: #f7f7f7;">
-			<view class="" style="height: 80rpx;padding: 10rpx 20rpx;">
+		<view style="position: fixed;bottom: 0;background-color: #f7f7f7;left: 0;right: 0;">
+			<view class="" style="padding: 10rpx 20rpx 0;">
 				<uni-row>
 					<uni-col :span="18">
 						<view style="display: inline-block;margin-right: 20rpx;">
@@ -35,14 +36,17 @@
 							</picker>
 						</view>
 						<view style="display: inline-block;margin-right: 25rpx;">
-							<image src="../../static/picture.png" style="width: 70rpx;height: 70rpx;"></image>
+							<image @click="uploadImage" src="../../static/picture.png"
+								style="width: 70rpx;height: 70rpx;"></image>
 						</view>
 						<view style="display: inline-block;margin-right: 30rpx;">
-							<image src="../../static/video.png" style="width: 60rpx;height: 60rpx;margin-bottom: 5rpx;">
+							<image @click="showToast" src="../../static/video.png"
+								style="width: 60rpx;height: 60rpx;margin-bottom: 5rpx;">
 							</image>
 						</view>
 						<view style="display: inline-block;margin-right: 20rpx;">
-							<image src="../../static/music.png" style="width: 60rpx;height: 60rpx;margin-bottom: 5rpx;">
+							<image @click="showToast" src="../../static/music.png"
+								style="width: 60rpx;height: 60rpx;margin-bottom: 5rpx;">
 							</image>
 						</view>
 					</uni-col>
@@ -54,13 +58,11 @@
 					</uni-col>
 				</uni-row>
 			</view>
-			<view class="" style="height: 120rpx;padding: 15rpx;">
-				<view style="background-color: #fff;">
-					<input style="height: 90rpx;padding: 0 20rpx;border-radius: 32rpx;" cursor-spacing="20rpx"
-						:adjust-position='true' type="text" :focus="isReplyFloor" @blur="isReplyFloor=false"
-						v-model="replyData.content" :placeholder="replyTips" />
-				</view>
-				</uni-row>
+			<view style="background-color: #fff;padding: 20rpx;margin: 0 20rpx 20rpx;">
+				<textarea :maxlength="-1" :fixed="true" style="width: 100%;" :cursor-spacing="20"
+					:adjust-position='true' type="text" :focus="isReplyFloor" @blur="isReplyFloor=false"
+					v-model="replyData.content" :placeholder="replyTips" :auto-height="true"
+					:show-confirm-bar="false"></textarea>
 			</view>
 		</view>
 	</view>
@@ -113,6 +115,57 @@
 			this.originReplyData = JSON.parse(JSON.stringify(this.replyData))
 		},
 		methods: {
+			showToast() {
+				uni.showToast({
+					title: '开发中',
+					icon: 'none'
+				})
+			},
+			uploadImage() {
+				uni.chooseImage({
+					success: (chooseImageRes) => {
+						const tempFilePaths = chooseImageRes.tempFilePaths;
+						uni.showLoading({
+							title: '图片上传中'
+						})
+						uni.uploadFile({
+							url: 'https://yh-pic.ihcloud.net/api/qq.php', //仅为示例，非真实的接口地址
+							filePath: tempFilePaths[0],
+							name: 'image',
+							formData: {
+								'user': 'test'
+							},
+							success: (uploadFileRes) => {
+								let jsonRes = JSON.parse(uploadFileRes.data)
+								let url = jsonRes.data.url
+								let ubb = `[img]${url}[/img]`
+								this.replyData.content += ubb
+							},
+							fail: () => {
+								uni.showToast({
+									title: '上传失败',
+									icon: 'error'
+								})
+							},
+							complete: () => {
+								uni.hideLoading()
+							}
+						});
+					}
+				})
+			},
+			linkTap(e) {
+				if (e.href.indexOf('bbs-') < 0) {
+					uni.navigateTo({
+						url: `/pages/webview/webview?url=${e.href}`
+					})
+				} else {
+					let id = e.href.split('-')[1].split('.')[0]
+					uni.navigateTo({
+						url: `/pages/detail/detail?id=${id}`
+					})
+				}
+			},
 			bindPickerChange: function(e) {
 				this.faceIndex = e.detail.value;
 				if (this.faceIndex) {
@@ -128,7 +181,6 @@
 			},
 			replyToFloor(index) {
 				let floor = this.comments[index]
-				console.log(floor);
 				this.replyData.g = '发表回复'
 				this.replyData.reply = floor.floor
 				this.replyData.touserid = floor.user.match(/\((.*?)\)/)[1]
@@ -164,7 +216,7 @@
 							icon: 'success'
 						})
 						this.cancelReply()
-						this.$emit('fetchReply', 1)
+						// this.$emit('fetchReply', 1)
 					},
 					fail: (err) => {
 						uni.showToast({

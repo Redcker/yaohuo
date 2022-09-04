@@ -15,7 +15,6 @@
 
 		},
 		onLoad(option) {
-			console.log(option);
 			this.url = option.url
 		}
 	}

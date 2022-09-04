@@ -109,6 +109,10 @@
 						iconPath: '/static/message.png',
 						selectedIconPath: '/static/message.png',
 						text: '消息'
+					}, {
+						iconPath: '/static/refresh.png',
+						selectedIconPath: '/static/refresh.png',
+						text: '刷新'
 					}
 				]
 			}
@@ -253,14 +257,21 @@
 				this.page = 1
 				this.fetchData()
 			},
-			trigger(e) {
-				if (e.index) {
+			async trigger(e) {
+				if (e.index === 0) {
 					uni.navigateTo({
 						url: '/pages/message/message'
 					})
-				} else {
+				} else if (e.index === 1) {
 					uni.navigateTo({
 						url: '/pages/webview/webview?url=https://yaohuo.me/myfile.aspx'
+					})
+				} else {
+					uni.pageScrollTo({
+						scrollTop:0
+					})
+					uni.startPullDownRefresh({
+						
 					})
 				}
 			}

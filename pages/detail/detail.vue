@@ -25,7 +25,7 @@
 				<view style="border-bottom:  1px dashed #dcdcdc;margin-bottom: 20rpx;margin-top: 15rpx;">
 
 				</view>
-				<mp-html :content="nodes" selectable lazy-load domain="https://yaohuo.me"
+				<mp-html :content="nodes" :copyLink="false" selectable lazy-load domain="https://yaohuo.me"
 					containerStyle="line-height:60rpx;word-break: break-all;font-size:32rpx" @linktap="linkTap">
 				</mp-html>
 				<view style="margin: 20rpx 0;">
@@ -96,6 +96,17 @@
 						current: imgUrl,
 						urls: [imgUrl]
 					})
+				} else {
+					if (e.href.indexOf('bbs-') < 0) {
+						uni.navigateTo({
+							url: `/pages/webview/webview?url=${e.href}`
+						})
+					} else {
+						let id = e.href.split('-')[1].split('.')[0]
+						uni.navigateTo({
+							url: `/pages/detail/detail?id=${id}`
+						})
+					}
 				}
 			},
 			fetchReply(flag) {
@@ -238,8 +249,7 @@
 								}
 
 							}
-							if (first.name === 'a' && first.attribs.href.indexOf('userinfo') < 0 && first.attribs.href
-								.indexOf('bbs/Book_re') < 0) {
+							if (first.name === 'a' && first.attribs.href.indexOf('book_re_addfileshow') > -1) {
 								uni.request({
 									url: `https://yaohuo.me${first.attribs.href}`,
 									header: {
@@ -249,7 +259,7 @@
 										let imgUrl = res.data.match(/img src=\"(.*?)\"/)
 										if (imgUrl) {
 											replyObj.text +=
-												`<img style="max-width:80%" src="https://yaohuo.me${imgUrl}">`
+												`<img style="max-width:80%" src="https://yaohuo.me${imgUrl[1]}">`
 										} else {
 											let fileUrl = res.data.match(/\"(\/bbs\/download.*?)\"/)
 											if (fileUrl) {
@@ -260,6 +270,14 @@
 
 									}
 								})
+							}
+							if (first.name === 'a' && first.attribs.href.indexOf('bbs-') < 0 && first.attribs.href.indexOf(
+									'bbs/Book_re.aspx') < 0) {
+								replyObj.text += `<a href="${first.attribs.href}">${first.children[0].data}</a>`
+							}
+							if (first.name === 'a' && first.attribs.href.indexOf('bbs-') > -1) {
+								let url = first.attribs.href
+								replyObj.text += `<a href="${url}">${first.children[0].data}</a>`
 							}
 							if (first.next.name === 'a' && first.next.attribs.href.indexOf('userinfo') > -1) {
 								break
