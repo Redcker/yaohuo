@@ -258,11 +258,11 @@
 				this.fetchData()
 			},
 			async trigger(e) {
-				if (e.index === 0) {
+				if (e.index === 1) {
 					uni.navigateTo({
 						url: '/pages/message/message'
 					})
-				} else if (e.index === 1) {
+				} else if (e.index === 0) {
 					uni.navigateTo({
 						url: '/pages/webview/webview?url=https://yaohuo.me/myfile.aspx'
 					})
