@@ -1,61 +1,94 @@
 <template>
-	<view>
-		<uni-search-bar bgColor="#fff" class="uni-mt-10" radius="8" placeholder="善用搜索" clearButton="auto"
-			@confirm="search" @cancel="cancelSearch" />
-		<view class="content">
-
-			<view v-for="(post,index) in posts" :key="index" class="post-card" @click="goToDetail(post.url)">
-				<view class="title f-16">
-					{{index+1}}.{{post.title}}
-				</view>
-				<view class="info">
-					<uni-row>
-						<uni-col :span="12">
-							<view class="f-13">
-								{{post.author}}
+	<view v-if="!loading">
+		<uni-transition mode-class="fade" :duration="300" :show="true">
+			<view class="logo">
+				<image src="https://yaohuo.me/tupian/yaohuo.png"></image>
+			</view>
+			<uni-search-bar bgColor="#fff" class="uni-mt-10" radius="8" placeholder="善用搜索" clearButton="auto"
+				@confirm="search" @cancel="cancelSearch" />
+			<view class="content">
+				<view class="grid">
+					<uni-grid :column="5" :showBorder="false" :square="false" :highlight="true" @change="gridChange">
+						<uni-grid-item v-for="(item,index) in idArr" :index="parseInt(item.id)" :key="item.id">
+							<view class="grid-item-box">
+								<uni-icons :type="item.icon" :size="30" color="#777" />
+								<text class="text">{{item.name}}</text>
 							</view>
-						</uni-col>
-						<uni-col :span="12">
-							<view class="f-13 text-right">
-								<uni-icons type="eye" class="icon"></uni-icons>{{post.readCount}}
-								<uni-icons type="chatboxes" class="icon"></uni-icons>{{post.replyCount}}
+						</uni-grid-item>
+					</uni-grid>
+				</view>
+				<view class="grid mt-20">
+					<uni-grid :column="2" :showBorder="false" :square="false" :highlight="true" @change="goToWebview">
+						<uni-grid-item v-for="(item,index) in actionArr" :index="index" :key="index">
+							<view class="grid-item-box">
+								<uni-icons :type="item.icon" :size="30" color="#777" />
+								<text class="text">{{item.name}}</text>
+							</view>
+						</uni-grid-item>
+					</uni-grid>
+				</view>
+				<view class="mt-20 br-8 f-15" style="background-color: #fff;">
+					<uni-section titleFontSize="16px" title="最新回复" type="line"></uni-section>
+					<uni-row>
+						<uni-col :span="12" v-for="(item,index) in newArr" :key="index">
+							<view class="new-post-item" @click="goToDetail(item.id)">
+								{{index+1}}.{{item.title}}
 							</view>
 						</uni-col>
 					</uni-row>
 				</view>
-				<view class="tags">
-					<uni-tag class="tag" v-for="(tag,tagIndex) in post.tags" :key="tagIndex" :circle="true"
-						:type="typeObj[tag]" :text="tag"></uni-tag><strong></strong>
+				<view class="mt-20 br-8 recomment-card f-15">
+					<uni-section titleFontSize="16px" title="老C推荐" type="line"></uni-section>
+					<uni-row>
+						<uni-col :span="12" v-for="(item,index) in recommedArr" :key="index">
+							<view class="new-post-item" @click="goToRecommend(item)">
+								<image class="img" :src="item.img"></image>
+								{{item.title}}
+							</view>
+						</uni-col>
+					</uni-row>
+					<view style="position: absolute;top: 20rpx;right: 20rpx;" class="" @click="goToRecommend(extraObj)">
+						<image class="img" :src="extraObj.img"></image>
+						{{extraObj.title}}
+					</view>
 				</view>
 			</view>
-			<uni-load-more style="height: 50rpx;" v-show="page!==1" :status="status"></uni-load-more>
+
 			<uni-fab ref="fab" :pattern="pattern" :content="content" :horizontal="horizontal" :vertical="vertical"
 				:direction="direction" @trigger="trigger" />
-		</view>
+			<post-list style="margin-top: 10rpx;" ref="postList"></post-list>
+		</uni-transition>
+
 	</view>
 </template>
 
 <script>
+	import UniSection from '@/components/uni-section/components/uni-section/uni-section'
 	import {
 		cheerio
 	} from '@/utils/cheerio.js'
-
+	import {
+		idArr
+	} from '@/utils/yaohuo.js'
 	export default {
 		data() {
 			return {
-				posts: [],
-				typeObj: {
-					'附': 'success',
-					'赏': 'warning',
-					'肉': 'warning',
-					'结': 'default'
-				},
+				idArr: idArr,
+				actionArr: [{
+					icon: 'compose',
+					name: '发帖',
+					url: 'https://yaohuo.me/wapindex.aspx?classid=206'
+				}, {
+					icon: 'medal',
+					name: '游戏',
+					url: 'https://yaohuo.me/games/gamesindex.aspx'
+				}],
+				loading: true,
 				isSearch: false,
 				searchContent: '',
-				page: 1,
-				totalPage: 135,
-				status: 'more',
-				canFresh: true,
+				newArr: [],
+				recommedArr: [],
+				extraObj: {},
 				directionStr: '垂直',
 				horizontal: 'right',
 				vertical: 'bottom',
@@ -81,15 +114,11 @@
 			}
 		},
 		onReachBottom() {
-			if (this.page < this.totalPage) {
-				this.page++
-				this.status = 'loading'
-				if (!this.isSearch) {
-					this.fetchData()
-				} else {
-					this.searchNext()
-				}
-			}
+			this.$refs.postList.loadMore()
+		},
+		onPullDownRefresh() {
+			this.fetchData()
+			this.$refs.postList.refreshData()
 		},
 		onLoad() {
 			if (uni.getStorageSync('cookie')) {
@@ -103,47 +132,121 @@
 				})
 			}
 		},
-		onPullDownRefresh() {
-			if (!this.canFresh) {
-				uni.showToast({
-					title: '请勿频繁刷新',
-					icon: 'error'
-				})
-				uni.stopPullDownRefresh()
-				return
-			}
-			this.isSearch = false
-			this.canFresh = false
-			this.page = 1
-			setTimeout(() => {
-				this.canFresh = true
-			}, 1000 * 20)
-			this.fetchData()
-		},
 		methods: {
-			searchNext() {
-				this.fetchSearchData()
-			},
-			search(e) {
-				this.page = 1
-				this.searchContent = e.value
-				this.fetchSearchData()
-			},
-			fetchSearchData() {
-				uni.showLoading({
-					title: '搜索中'
+			goToDetail(id) {
+				uni.navigateTo({
+					url: `/pages/detail/detail?id=${id}`
 				})
+			},
+			goToWebview(e) {
+				uni.navigateTo({
+					url: `/pages/webview/webview?url=${this.actionArr[e.detail.index].url}`
+				})
+			},
+			goToRecommend(item) {
+				if (item.url.indexOf('/bbs/') > -1) {
+					let id = item.url.split('-')[1].split('.')[0]
+					uni.navigateTo({
+						url: `/pages/detail/detail?id=${id}`
+					})
+				} else {
+					uni.navigateTo({
+						url: `/pages/webview/webview?url=${item.url}`
+					})
+				}
+			},
+			fetchData() {
 				uni.request({
-					url: `https://yaohuo.me/bbs/book_list.aspx?action=search&type=title&key=${this.searchContent}&page=${this.page}`,
+					url: 'https://yaohuo.me/',
 					header: {
 						cookie: uni.getStorageSync('cookie')
 					},
 					success: (res) => {
-						this.handleData(res.data)
-						this.isSearch = true
+						let messageCountMatch = res.data.match(/收到(.*?)封飞鸽传书/)
+						if (messageCountMatch) {
+							uni.setNavigationBarTitle({
+								title: `妖火网（${messageCountMatch[1]}条新消息）`
+							})
+						} else {
+							uni.setNavigationBarTitle({
+								title: '妖火网'
+							})
+						}
+						const $ = cheerio.load(res.data)
+						const children = $('.list')[0].children
+						let newArr = []
+						children.forEach((child, index) => {
+							if (child.type === 'tag' && child.name === 'a' && newArr.length < 8) {
+								newArr.push({
+									id: child.attribs.href.split('-')[1].split('.')[0],
+									title: child.children[0].data
+								})
+							}
+						})
+						this.newArr = newArr
+						const recommedC = $('.shouye')
+						let recommedArr = []
+						let first = recommedC[0]
+						recommedC.each(index => {
+							let first = recommedC[index].children[0]
+							let obj = {}
+							while (first) {
+								if (first.name === 'a') {
+									obj.title = first.children[0].data
+									obj.url = first.attribs.href[0] == '/' ?
+										`https://yaohuo.me${first.attribs.href}` : first.attribs.href
+								}
+								if (first.name === 'img') {
+									obj.img = first.attribs.src[0] == '/' ?
+										`https://yaohuo.me${first.attribs.src}` : first.attribs.src
+								}
+								first = first.next
+							}
+							recommedArr.push(obj)
+						})
+						this.recommedArr = recommedArr
+						const recommendExtra = $('.content')
+						if (recommendExtra.length) {
+							let extraObj = {}
+							extraObj.title = ''
+							let first = recommendExtra[0]
+							first.children.forEach(child => {
+								if (child.type == 'tag' && child.name == 'img') {
+									extraObj.img = child.attribs.src[0] == '/' ?
+										`https://yaohuo.me${child.attribs.src}` : child.attribs.src
+								}
+								if (child.type == 'tag' && child.name === 'a') {
+									extraObj.title += child.children[0].data
+									extraObj.url = child.attribs.href[0] == '/' ?
+										`https://yaohuo.me${child.attribs.href}` : child.attribs.href
+								}
+								if (child.type === 'text') {
+									extraObj.title += child.data
+								}
+							})
+							this.extraObj = extraObj
+						}
+						this.loading = false
+						uni.stopPullDownRefresh()
 					}
 				})
 			},
+			gridChange(e) {
+				let url = `https://yaohuo.me/bbs/list.aspx?classid=${e.detail.index}`
+				uni.navigateTo({
+					url: `/pages/bbsList/bbsList?url=${encodeURIComponent(JSON.stringify({url}))}`
+				})
+			},
+
+			search(e) {
+				this.page = 1
+				this.searchContent = e.value
+				let url = `https://yaohuo.me/bbs/book_list.aspx?action=search&type=title&key=${this.searchContent}`
+				uni.navigateTo({
+					url: `/pages/bbsList/bbsList?url=${encodeURIComponent(JSON.stringify({url}))}`
+				})
+			},
+
 			cancelSearch() {
 				this.isSearch = false
 				this.searchContent = ''
@@ -160,121 +263,6 @@
 						url: '/pages/webview/webview?url=https://yaohuo.me/myfile.aspx'
 					})
 				}
-			},
-			fetchData() {
-				if (this.canFresh && this.status != 'loading') {
-					uni.showLoading({
-						title: '拉取数据中'
-					})
-				}
-				uni.request({
-					url: `https://yaohuo.me/bbs/book_list.aspx?action=new&siteid=1000&classid=0&getTotal=2022&page=${this.page}`,
-					header: {
-						cookie: uni.getStorageSync('cookie')
-					},
-					success: (res) => {
-						let messageCountMatch = res.data.match(/收到(.*?)封飞鸽传书/)
-						if (messageCountMatch) {
-							uni.setNavigationBarTitle({
-								title: `妖火网（${messageCountMatch[1]}条新消息）`
-							})
-						}else{
-							uni.setNavigationBarTitle({
-								title: '妖火网'
-							})
-						}
-						let tip = res.data.match(/<div class=\"tip\">(.*?)<\/div>/)
-						if (tip) {
-							if (tip[1].indexOf('失效') > -1) {
-								setTimeout(() => {
-									uni.redirectTo({
-										url: '/pages/login/login'
-									})
-								}, 500)
-								return uni.showToast({
-									title: '请重新登录',
-									icon: 'error'
-								})
-							}
-						}
-						this.handleData(res.data)
-					}
-				})
-			},
-			handleData(resData) {
-				const $ = cheerio.load(resData)
-				let data = $('.listdata')
-				let posts = []
-				for (let index in data) {
-					let post = {}
-					let tags = []
-					if (data[index].type === 'tag') {
-						let children = data[index].children
-						let child = children[1]
-						while (child && child.name === 'img') {
-							tags.push(child.attribs.alt === '礼' ? '肉' : child.attribs.alt)
-							if (child.next.name === 'img') {
-								child = child.next
-							} else {
-								break
-							}
-						}
-						post.tags = tags
-						while (child) {
-							if (child.children && child.children.length === 2) {
-								break
-							}
-							if (child.name && child.name == 'a' && isNaN(child.children[0].data)) {
-								post.title = child.children[0].data
-								post.url = child.attribs.href
-							}
-							if (child.name && child.name == 'a' && !isNaN(child.children[0].data)) {
-								post.replyCount = child.children[0].data
-								post.readCount = child.next.data.replace(/[^\d.]/g, '')
-							}
-							if (child.type === 'text' && child.next.name && child.next.name === 'a') {
-								if (child.data === '/') {
-									post.author = child.prev.children[0].data
-								} else {
-									post.author = child.data.replace('/', '')
-								}
-							}
-							child = child.next
-						}
-						posts.push(post)
-					}
-				}
-				if (this.page === 1) {
-					this.posts = posts
-				} else {
-					this.posts = this.posts.concat(posts)
-				}
-				if (this.page < this.totalPage) {
-					this.status = 'more'
-				} else {
-					this.status = 'noMore'
-				}
-				uni.hideLoading()
-				uni.stopPullDownRefresh()
-			},
-			goToDetail(url) {
-				if (uni.getStorageSync('cookie')) {
-					let id = url.split('-')[1].split('.')[0]
-					uni.navigateTo({
-						url: `/pages/detail/detail?id=${id}`
-					})
-				} else {
-					uni.showModal({
-						content: '请先登录',
-						success: (res) => {
-							if (res.confirm) {
-								uni.navigateTo({
-									url: '/pages/login/login'
-								})
-							}
-						}
-					})
-				}
 			}
 		}
 	}
@@ -285,39 +273,118 @@
 	}
 </style>
 <style lang="scss" scoped>
+	.logo {
+		text-align: center;
+		margin: 20rpx 0 10rpx;
+
+		image {
+			width: 180px;
+			height: 61px;
+		}
+	}
+
 	.content {
 		padding: 10rpx 20rpx 0;
 
-		.post-card {
-			padding: 20rpx 40rpx;
-			box-shadow: rgba(0, 0, 0, .2) 0 1px 5px 0px;
-			margin-bottom: 20rpx;
-			border-radius: 8px;
+
+		.recomment-card {
+			background-color: #fff;
 			position: relative;
-			background: #fff;
-
-			.tags {
-				position: absolute;
-				top: -10rpx;
-				right: -10rpx;
-
-				.tag {
-					margin-left: 10rpx;
-				}
-			}
-
-			.title {}
-
-			.info {
-				margin-top: 20rpx;
-
-				.icon {
-					margin: 0 10rpx;
-					vertical-align: -1px;
-				}
-			}
-
 
 		}
+
+		.new-post-item {
+			padding: 0 20rpx 20rpx;
+			white-space: nowrap;
+			text-overflow: ellipsis;
+			overflow: hidden;
+		}
+
+		.img {
+			width: 30rpx;
+			height: 30rpx;
+			margin-right: 10rpx;
+			vertical-align: -3px;
+		}
+
+
+	}
+
+	::v-deep .uni-section {
+		border-radius: 8px;
+	}
+
+	.grid {
+		background-color: #fff;
+		border-radius: 8px;
+
+		.image {
+			width: 25px;
+			height: 25px;
+		}
+
+		.text {
+			font-size: 14px;
+			margin-top: 5px;
+		}
+
+		.example-body {
+			/* #ifndef APP-NVUE */
+			// display: block;
+			/* #endif */
+		}
+
+		.grid-dynamic-box {
+			margin-bottom: 15px;
+		}
+
+		.grid-item-box {
+			flex: 1;
+			// position: relative;
+			/* #ifndef APP-NVUE */
+			display: flex;
+			/* #endif */
+			flex-direction: column;
+			align-items: center;
+			justify-content: center;
+			padding: 15px 0;
+		}
+
+		.grid-item-box-row {
+			flex: 1;
+			// position: relative;
+			/* #ifndef APP-NVUE */
+			display: flex;
+			/* #endif */
+			flex-direction: row;
+			align-items: center;
+			justify-content: center;
+			padding: 15px 0;
+		}
+
+		.grid-dot {
+			position: absolute;
+			top: 5px;
+			right: 15px;
+		}
+
+		.swiper {
+			height: 420px;
+		}
+
+		/* #ifdef H5 */
+		@media screen and (min-width: 768px) and (max-width: 1425px) {
+			.swiper {
+				height: 630px;
+			}
+		}
+
+		@media screen and (min-width: 1425px) {
+			.swiper {
+				height: 830px;
+			}
+		}
+
+		/* #endif */
 	}
 </style>

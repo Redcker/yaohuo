@@ -54,15 +54,24 @@
 		},{
 			"path": "pages/webview/webview",
 			"style": {
-				"navigationBarTitleText": "我的",
+				"navigationBarTitleText": "",
 				"enablePullDownRefresh": false,
+				"app-plus": {
+					"bounce": "none"
+				}
+			}
+		},{
+			"path": "pages/bbsList/bbsList",
+			"style": {
+				"navigationBarTitleText": "帖子列表",
+				"enablePullDownRefresh": true,
 				"app-plus": {
 					"bounce": "none"
 				}
 			}
 		
 		}
-	],
+    ],
 	"globalStyle": {
 		"navigationBarTextStyle": "black",
 		"navigationBarTitleText": "妖火网",

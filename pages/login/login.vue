@@ -1,5 +1,8 @@
 <template>
 	<view class="content">
+		<view class="logo">
+			<image src="https://yaohuo.me/tupian/yaohuo.png"></image>
+		</view>
 		<uni-forms :modelValue="formData" label-position="top">
 			<uni-forms-item required label="用户名" name="username">
 				<uni-easyinput type="text" v-model="formData.username" placeholder="请输入用户名" />
@@ -87,5 +90,15 @@
 			color: #fff;
 			background-color: rgb(0, 122, 255);
 		}
+		.logo {
+			text-align: center;
+			margin: 60rpx 0;
+		
+			image {
+				width: 180px;
+				height: 61px;
+			}
+		}
+		
 	}
 </style>

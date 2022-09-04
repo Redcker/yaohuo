@@ -57,7 +57,7 @@
 			<view class="" style="height: 120rpx;padding: 15rpx;">
 				<view style="background-color: #fff;">
 					<input style="height: 90rpx;padding: 0 20rpx;border-radius: 32rpx;" cursor-spacing="20rpx"
-						:adjust-position='true' type="text" :focus="isReplyFloor" @blur="cancelReply"
+						:adjust-position='true' type="text" :focus="isReplyFloor" @blur="isReplyFloor=false"
 						v-model="replyData.content" :placeholder="replyTips" />
 				</view>
 				</uni-row>
@@ -120,27 +120,26 @@
 				}
 			},
 			cancelReply() {
-				if (!this.loading) {
-					this.isReplyFloor = false
-					delete this.replyData.reply
-					delete this.replyData.touserid
-					this.replyData.g = '快速回复'
-					this.replyTips = '请勿乱打字回复,以免被加黑。'
-				}
+				this.isReplyFloor = false
+				delete this.replyData.reply
+				delete this.replyData.touserid
+				this.replyData.g = '快速回复'
+				this.replyTips = '请勿乱打字回复,以免被加黑。'
 			},
 			replyToFloor(index) {
 				let floor = this.comments[index]
+				console.log(floor);
 				this.replyData.g = '发表回复'
 				this.replyData.reply = floor.floor
 				this.replyData.touserid = floor.user.match(/\((.*?)\)/)[1]
 				this.isReplyFloor = true
 				this.replyTips = `回复${floor.floor}楼：`
 			},
-			goToUserArea(index){
+			goToUserArea(index) {
 				let user = this.comments[index].user
 				let id = user.match(/\((\d{0,10})\)/)
 				uni.navigateTo({
-					url:`/pages/webview/webview?url=https://yaohuo.me/bbs/userinfo.aspx?touserid=${id[1]}`
+					url: `/pages/webview/webview?url=https://yaohuo.me/bbs/userinfo.aspx?touserid=${id[1]}`
 				})
 			},
 			reply() {
@@ -165,7 +164,7 @@
 							icon: 'success'
 						})
 						this.cancelReply()
-						// this.$emit('fetchReply', 1)
+						this.$emit('fetchReply', 1)
 					},
 					fail: (err) => {
 						uni.showToast({

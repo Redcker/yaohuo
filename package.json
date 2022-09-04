@@ -1,7 +1,6 @@
 {
   "dependencies": {
-    "cheerio": "^0.22.0",
-    "uview-ui": "^1.8.4"
+    "cheerio": "^0.22.0"
   },
   "devDependencies": {
     "js-md5": "^0.7.3"

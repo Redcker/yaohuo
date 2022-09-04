@@ -8,13 +8,14 @@
 	export default {
 		data() {
 			return {
-				url:''
+				url: ''
 			}
 		},
 		methods: {
-			
+
 		},
 		onLoad(option) {
+			console.log(option);
 			this.url = option.url
 		}
 	}

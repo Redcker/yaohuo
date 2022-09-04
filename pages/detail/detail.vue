@@ -56,6 +56,9 @@
 	import {
 		cheerio
 	} from '@/utils/cheerio.js'
+	import {
+		idObj
+	} from '@/utils/yaohuo.js'
 	import HTMLParser from '@/utils/html-parser.js'
 	export default {
 		data() {
@@ -67,18 +70,7 @@
 				page: 1,
 				totalPage: 0,
 				status: 'more',
-				idObj: {
-					'177': '妖火茶馆',
-					'213': '悬赏问答',
-					'201': '资源分享',
-					'197': '综合技术',
-					'204': '有奖活动',
-					'203': '免流分享',
-					'240': '贴图晒照',
-					'198': '投诉建议',
-					'199': '站务处理',
-					'288': '网站公告',
-				}
+				idObj: idObj
 			}
 		},
 		onLoad(option) {

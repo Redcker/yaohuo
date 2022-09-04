@@ -55,4 +55,19 @@
 	.text-center {
 		text-align: center;
 	}
+	.mt-20{
+		margin-top: 20rpx;
+	}
+	.mb-20{
+		margin-bottom: 20rpx;
+	}
+	.br-8{
+		border-radius: 8px;
+	}
+	.p-20{
+		padding: 20rpx;
+	}
+	.p-10{
+		padding: 10rpx;
+	}
 </style>
