@@ -1,8 +1,5 @@
 {
   "dependencies": {
     "cheerio": "^0.22.0"
-  },
-  "devDependencies": {
-    "js-md5": "^0.7.3"
   }
 }

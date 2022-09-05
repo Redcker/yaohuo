@@ -37,6 +37,7 @@
 						</uni-col>
 					</uni-row>
 				</view>
+				<!-- #ifdef APP-PLUS -->
 				<view class="mt-20 br-8 recomment-card f-15">
 					<uni-section titleFontSize="16px" title="老C推荐" type="line"></uni-section>
 					<uni-row>
@@ -52,8 +53,8 @@
 						{{extraObj.title}}
 					</view>
 				</view>
+				<!-- #endif -->
 			</view>
-
 			<uni-fab ref="fab" :pattern="pattern" :content="content" :horizontal="horizontal" :vertical="vertical"
 				:direction="direction" @trigger="trigger" />
 			<post-list style="margin-top: 10rpx;" ref="postList"></post-list>
@@ -188,6 +189,7 @@
 							}
 						})
 						this.newArr = newArr
+						//#ifdef APP-PLUS
 						const recommedC = $('.shouye')
 						let recommedArr = []
 						let first = recommedC[0]
@@ -230,6 +232,7 @@
 							})
 							this.extraObj = extraObj
 						}
+						//#endif
 						this.loading = false
 						uni.stopPullDownRefresh()
 					}
@@ -268,10 +271,10 @@
 					})
 				} else {
 					uni.pageScrollTo({
-						scrollTop:0
+						scrollTop: 0
 					})
 					uni.startPullDownRefresh({
-						
+
 					})
 				}
 			}

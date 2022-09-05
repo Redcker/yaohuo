@@ -21,14 +21,17 @@
 							</view>
 						</uni-col>
 					</uni-row>
+					<view style="margin-top: 20rpx;" v-if="honorArr.length">
+						<image style="width: 40rpx;height: 50rpx;margin-right: 5rpx;" v-for="(item,index) in honorArr"
+							:key="index" :src="item"></image>
+					</view>
 				</view>
 				<view style="border-bottom:  1px dashed #dcdcdc;margin-bottom: 20rpx;margin-top: 15rpx;">
-
 				</view>
-				<mp-html :content="nodes" :copyLink="false" selectable lazy-load domain="https://yaohuo.me"
+				<mp-html :content="nodes" :copyLink="false" selectable domain="https://yaohuo.me"
 					containerStyle="line-height:60rpx;word-break: break-all;font-size:32rpx" @linktap="linkTap">
 				</mp-html>
-				<view style="margin: 20rpx 0;">
+				<view style="margin: 20rpx 0 30rpx;">
 					<uni-row>
 						<uni-col :span="12">
 							<view class="f-13 info">
@@ -70,7 +73,8 @@
 				page: 1,
 				totalPage: 0,
 				status: 'more',
-				idObj: idObj
+				idObj: idObj,
+				honorArr: []
 			}
 		},
 		onLoad(option) {
@@ -111,7 +115,10 @@
 			},
 			fetchReply(flag) {
 				if (flag) {
-					this.comments = []
+					this.page = 1
+					uni.showLoading({
+						title: '刷新评论中'
+					})
 				}
 				uni.request({
 					url: `https://yaohuo.me/bbs/book_re.aspx?id=${this.info.postId}&classid=${this.info.classId}&page=${this.page}`,
@@ -122,12 +129,25 @@
 						let $ = cheerio.load(res.data)
 						let replies = $('.list-reply')
 						let reply = replies[0]
-						this.getReply(reply)
+						let comments = []
+						this.getReply(reply, comments)
+						uni.hideLoading()
+						if (flag) {
+							this.comments = comments
+							uni.showToast({
+								title: '刷新成功'
+							})
+						} else {
+							this.comments = this.comments.concat(comments)
+						}
 						if (this.page === this.totalPage) {
 							this.status = 'noMore'
 						} else {
 							this.status = 'more'
 						}
+					},
+					fail: () => {
+						uni.hideLoading()
 					},
 					complete: () => {
 						uni.hideNavigationBarLoading()
@@ -174,7 +194,7 @@
 						let content = res.data.match(/<!--listS-->([\s\S]*?)<!--listE-->/)
 						this.nodes = content ? content[1].replace(
 							/height=\"100%px\"/, '').replace(/width=\"100%px\"/, 'width="100%"').replace(
-							/poster=\"(.*?)\"/, '').replace(/<a href=\"\/bbs\/picDIY.aspx.*?\""/,
+							/<a href=\"\/bbs\/picDIY.aspx.*?\""/,
 							'<a href=\"\"') : ' '
 						let fileList = res.data.match(/<div class=\"line\">([\s\S]*?)<\/div>/g)
 						if (fileList) {
@@ -184,14 +204,35 @@
 							})
 						}
 						let $ = cheerio.load(res.data)
+						let honorNodes = $('.subtitle')[1].children
+						let firstNode = honorNodes[0]
+						let honorArr = []
+						while (firstNode) {
+							firstNode = firstNode.next
+							if (firstNode.type === 'text' && firstNode.data.indexOf('荣誉') > -1) {
+								firstNode = firstNode.next
+								break
+							}
+						}
+						while (firstNode) {
+							if (firstNode.type === 'tag' && firstNode.name === 'br') {
+								break
+							}
+							if (firstNode.type === 'tag' && firstNode.name === 'img') {
+								honorArr.push(`https://yaohuo.me${firstNode.attribs.src}`)
+							}
+							firstNode = firstNode.next
+						}
+						this.honorArr = honorArr
 						this.getPostInfo($)
+						this.comments = []
 						this.fetchReply()
 						uni.hideLoading()
 						uni.stopPullDownRefresh()
 					}
 				})
 			},
-			getReply(reply) {
+			getReply(reply, comments) {
 				if (!reply || reply.data == 'listE') {
 					return
 				}
@@ -235,7 +276,11 @@
 						replyObj.text += first.data.replace(']', '')
 						first = first.next
 						while (first) {
-							if (first.type && first.type === 'text') {
+							if (first.type === 'tag' && first.name === 'video') {
+								replyObj.text +=
+									`<video src="${first.attribs.src}" poster="${first.attribs.poster}"></video>`
+							}
+							if (first.type && first.type === 'text' && first.data !== '][') {
 								replyObj.text += first.data
 							}
 							if (first.type && first.type === 'tag' && first.name === 'br') {
@@ -250,6 +295,7 @@
 
 							}
 							if (first.name === 'a' && first.attribs.href.indexOf('book_re_addfileshow') > -1) {
+								console.log(first);
 								uni.request({
 									url: `https://yaohuo.me${first.attribs.href}`,
 									header: {
@@ -267,12 +313,12 @@
 													`<a href="https://yaohuo.me${fileUrl[1]}">点击复制附件链接</a>`
 											}
 										}
-
 									}
 								})
 							}
 							if (first.name === 'a' && first.attribs.href.indexOf('bbs-') < 0 && first.attribs.href.indexOf(
-									'bbs/Book_re.aspx') < 0) {
+									'bbs/Book_re.aspx') < 0 && first.attribs.href.indexOf('bbs/Book_re_del.aspx') < 0 &&
+								first.attribs.href.indexOf('book_re_addfileshow') < 0) {
 								replyObj.text += `<a href="${first.attribs.href}">${first.children[0].data}</a>`
 							}
 							if (first.name === 'a' && first.attribs.href.indexOf('bbs-') > -1) {
@@ -291,9 +337,10 @@
 					first = first.next
 				}
 				replyObj.text = replyObj.text.replace('{}', '').replace('[]', '')
-				this.comments.push(replyObj)
+				comments.push(replyObj)
 				reply = reply.next
-				this.getReply(reply)
+				this.getReply(reply, comments)
+				return comments
 			},
 			getPostInfo($) {
 				// this.info.postId = this.url.split('-')[1].split('.')[0]
@@ -342,7 +389,7 @@
 </style>
 <style scoped>
 	.content {
-		padding: 20rpx 20rpx;
+		padding: 20rpx 20rpx 0;
 	}
 
 	.title {
@@ -355,14 +402,13 @@
 
 	.tip {
 		text-align: center;
-		margin-bottom: 20rpx;
 	}
 
 	.tip-text {
 		background: rgba(247, 247, 247);
 		font-size: 28upx;
 		line-height: 28upx;
-		padding: 12upx 30upx;
+		padding: 0 30upx;
 		border-radius: 30upx;
 		color: #333 !important;
 		display: inline-block;

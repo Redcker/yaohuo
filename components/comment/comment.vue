@@ -1,10 +1,20 @@
 <template>
-	<view class="content">
+	<view>
 		<view class="uni-padding-wrap">
 			<!-- 评论区 start -->
-			<view class="f-16">全部评论（共{{postInfo.replyCount}}条）</view>
+			<uni-row>
+				<uni-col :span="12">
+					<view class="f-16">全部评论（共{{postInfo.replyCount}}条）</view>
+				</uni-col>
+				<uni-col :span="12">
+					<view class="text-right">
+						<uni-icons class="refresh-comment-icon" @click="$emit('fetchReply',1)"
+							style="vertical-align: -5px;" type="refreshempty" size="20"></uni-icons>
+					</view>
+				</uni-col>
+			</uni-row>
 			<view class="uni-comment">
-				<view class="uni-comment-list" v-for="(comment,index) in comments" :key="index">
+				<view style="border-bottom:  1px dashed #dcdcdc;" class="uni-comment-list" v-for="(comment,index) in comments" :key="index">
 					<view class="uni-comment-face">
 						<view class="floor">
 							{{comment.floor}}
@@ -19,7 +29,7 @@
 							<view class="uni-comment-reply-btn" v-if="!postInfo.isEnd" @click="replyToFloor(index)">回复
 							</view>
 						</view>
-						<mp-html :content="comment.text" selectable lazy-load domain="https://yaohuo.me"
+						<mp-html :content="comment.text" selectable domain="https://yaohuo.me"
 							containerStyle="line-height:40rpx;word-break: break-all;font-size:30rpx" :copyLink="false"
 							@linktap="linkTap"></mp-html>
 					</view>
@@ -69,7 +79,6 @@
 </template>
 
 <script>
-	import md5 from 'js-md5'
 	import faces from '@/utils/faces.js'
 	export default {
 		name: 'comment',
@@ -92,7 +101,6 @@
 				replyTips: '请勿乱打字回复,以免被加黑。',
 				array: faces,
 				faceIndex: 0,
-				md5: md5,
 				loading: false,
 				isReplyFloor: false,
 				replyModalShow: false,
@@ -132,14 +140,17 @@
 							url: 'https://yh-pic.ihcloud.net/api/qq.php', //仅为示例，非真实的接口地址
 							filePath: tempFilePaths[0],
 							name: 'image',
-							formData: {
-								'user': 'test'
-							},
 							success: (uploadFileRes) => {
 								let jsonRes = JSON.parse(uploadFileRes.data)
 								let url = jsonRes.data.url
-								let ubb = `[img]${url}[/img]`
-								this.replyData.content += ubb
+								if (url.indexOf('失效') > -1){
+									uni.showToast({
+										title:'接口暂时失效'
+									})
+								}else{
+									let ubb = `[img]${url}[/img]`
+									this.replyData.content += ubb
+								}
 							},
 							fail: () => {
 								uni.showToast({
@@ -201,6 +212,7 @@
 						icon: 'error'
 					})
 				}
+				this.replyData.content = this.replyData.content.replace(/\n/g, '\r\n')
 				this.loading = true
 				uni.request({
 					url: 'https://yaohuo.me/bbs/book_re.aspx',
@@ -216,7 +228,7 @@
 							icon: 'success'
 						})
 						this.cancelReply()
-						// this.$emit('fetchReply', 1)
+						this.$emit('fetchReply', 1)
 					},
 					fail: (err) => {
 						uni.showToast({
@@ -317,6 +329,13 @@
 		border-radius: 30upx;
 		color: #333 !important;
 		margin: 0 10upx;
+	}
+
+	.refresh-comment-icon {
+		background: rgba(247, 247, 247);
+		padding: 15upx;
+		border-radius: 50%;
+		color: #333 !important;
 	}
 
 	.submit-btn {
