@@ -1,16 +1,12 @@
 <script>
 	export default {
-		onLaunch: function() {
-		},
-		onShow: function() {
-		},
-		onHide: function() {
-		}
+		onLaunch: function() {},
+		onShow: function() {},
+		onHide: function() {}
 	}
 </script>
 
 <style lang="scss">
-
 	/*每个页面公共css */
 	.f-12 {
 		font-size: 24rpx !important;
@@ -51,19 +47,24 @@
 	.text-center {
 		text-align: center;
 	}
-	.mt-20{
+
+	.mt-20 {
 		margin-top: 20rpx;
 	}
-	.mb-20{
+
+	.mb-20 {
 		margin-bottom: 20rpx;
 	}
-	.br-8{
+
+	.br-8 {
 		border-radius: 8px;
 	}
-	.p-20{
+
+	.p-20 {
 		padding: 20rpx;
 	}
-	.p-10{
+
+	.p-10 {
 		padding: 10rpx;
 	}
 </style>

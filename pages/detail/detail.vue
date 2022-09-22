@@ -204,7 +204,7 @@
 							})
 						}
 						let $ = cheerio.load(res.data)
-						let honorNodes = $('.subtitle')[1].children
+						let honorNodes = $('.subtitle')[0].children
 						let firstNode = honorNodes[0]
 						let honorArr = []
 						while (firstNode) {
@@ -361,7 +361,7 @@
 					this.info.time = children[6].data.match(/\](.*)/)[1].trim()
 					this.info.extra = children[0].data
 				}
-				let authorData = $('.subtitle')[1]
+				let authorData = $('.subtitle')[0]
 				let authorChildren = authorData.children[1].children
 				if (authorChildren.length === 1) {
 					this.info.author = authorChildren[0].data

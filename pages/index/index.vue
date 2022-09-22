@@ -17,6 +17,7 @@
 						</uni-grid-item>
 					</uni-grid>
 				</view>
+				<!-- #ifdef APP-PLUS -->
 				<view class="grid mt-20">
 					<uni-grid :column="2" :showBorder="false" :square="false" :highlight="true" @change="goToWebview">
 						<uni-grid-item v-for="(item,index) in actionArr" :index="index" :key="index">
@@ -37,6 +38,7 @@
 						</uni-col>
 					</uni-row>
 				</view>
+				<!-- #endif -->
 				<!-- #ifdef APP-PLUS -->
 				<view class="mt-20 br-8 recomment-card f-15">
 					<uni-section titleFontSize="16px" title="老C推荐" type="line"></uni-section>
